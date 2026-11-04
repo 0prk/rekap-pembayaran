@@ -323,8 +323,8 @@ function makeTable(headers, rows) {
 }
 
 function numClass(header) {
-  const h = String(header).toLowerCase();
-  if (h.includes('bruto') || h.includes('pajak') || h.includes('netto') || h.includes('nominal') || h.includes('jumlah') || h.includes('total')) return 'num';
+  const hText = String(header).toLowerCase();
+  if (hText.includes('bruto') || hText.includes('pajak') || hText.includes('netto') || hText.includes('nominal') || hText.includes('jumlah') || hText.includes('total')) return 'num';
   return '';
 }
 
