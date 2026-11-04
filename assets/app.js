@@ -31,7 +31,7 @@ function toggle(id, show) {
   el.classList.toggle('hidden', !show);
 }
 
-function h(str) {
+function esc(str) {
   const div = document.createElement('div');
   div.textContent = String(str ?? '');
   return div.innerHTML;
@@ -158,7 +158,7 @@ function renderSheetTabs() {
   if (state.sheets.length < 2) { wrap.classList.add('hidden'); wrap.innerHTML = ''; return; }
   wrap.classList.remove('hidden');
   wrap.innerHTML = state.sheets.map((s, i) =>
-    `<button class="sheet-tab ${i === state.activeSheetIdx ? 'active' : ''}" data-idx="${i}" type="button">${h(s.name)}</button>`
+    `<button class="sheet-tab ${i === state.activeSheetIdx ? 'active' : ''}" data-idx="${i}" type="button">${esc(s.name)}</button>`
   ).join('');
   wrap.querySelectorAll('.sheet-tab').forEach(btn =>
     on(btn, 'click', () => { state.activeSheetIdx = +btn.dataset.idx; startMapping(); })
@@ -171,19 +171,19 @@ function renderMapping() {
   const fmt = detectFormat(headers, state.mapping);
 
   const grid = $('#map-grid');
-  grid.innerHTML = `<div class="map-item" style="grid-column:1/-1; font-size:.8rem; color:var(--muted);">Format terdeteksi: <b>${h(fmt)}</b> · baris header: <b>${state.headerRow + 1}</b> · ${headers.length} kolom</div>`;
+  grid.innerHTML = `<div class="map-item" style="grid-column:1/-1; font-size:.8rem; color:var(--muted);">Format terdeteksi: <b>${esc(fmt)}</b> · baris header: <b>${state.headerRow + 1}</b> · ${headers.length} kolom</div>`;
 
   grid.innerHTML += FIELDS.map(f => {
     const idx = state.mapping[f.key];
     const mapped = idx != null && idx >= 0;
     return `
       <div class="map-item ${mapped ? 'mapped' : 'unmapped'}">
-        <label for="map-${f.key}">${h(f.label)}</label>
+        <label for="map-${f.key}">${esc(f.label)}</label>
         <select id="map-${f.key}" data-key="${f.key}">
           <option value="-1">(tidak dipakai)</option>
-          ${headers.map((hText, i) => `<option value="${i}" ${i === idx ? 'selected' : ''}>${h(i + 1)}. ${h(hText)}</option>`).join('')}
+          ${headers.map((hText, i) => `<option value="${i}" ${i === idx ? 'selected' : ''}>${esc(i + 1)}. ${esc(hText)}</option>`).join('')}
         </select>
-        <span class="hintline">${h(f.hint)}</span>
+        <span class="hintline">${esc(f.hint)}</span>
       </div>`;
   }).join('');
 
@@ -203,8 +203,8 @@ function renderPreview() {
 
   const table = $('#preview-table');
   table.innerHTML = `
-    <thead><tr>${headers.map(h => `<th>${h(h)}</th>`).join('')}</tr></thead>
-    <tbody>${body.map(row => `<tr>${row.map(c => `<td>${h(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+    <thead><tr>${headers.map(hdr => `<th>${esc(hdr)}</th>`).join('')}</tr></thead>
+    <tbody>${body.map(row => `<tr>${row.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
   `;
 }
 
@@ -254,7 +254,7 @@ function renderIssues(r) {
   const klass = r.errorCount > 0 ? 'issues err' : 'issues warn';
   const label = r.errorCount > 0 ? `Terdapat ${r.errorCount} error & ${r.issues.length - r.errorCount} peringatan` : `${r.issues.length} peringatan`;
   wrap.className = klass;
-  wrap.innerHTML = `<h4>⚠ ${h(label)}</h4><ul>${r.issues.map(i => `<li class="${h(i.level)}">${h(i.msg)}</li>`).join('')}</ul>`;
+  wrap.innerHTML = `<h4>⚠ ${esc(label)}</h4><ul>${r.issues.map(i => `<li class="${esc(i.level)}">${esc(i.msg)}</li>`).join('')}</ul>`;
 }
 
 function renderTab() {
@@ -314,9 +314,9 @@ function makeTable(headers, rows) {
   if (!rows.length) return '<div class="empty">Tidak ada data untuk tab ini.</div>';
   return `
     <div class="table-wrap"><table class="tbl">
-      <thead><tr>${headers.map(hdr => `<th>${h(hdr)}</th>`).join('')}</tr></thead>
+      <thead><tr>${headers.map(hdr => `<th>${esc(hdr)}</th>`).join('')}</tr></thead>
       <tbody>
-        ${rows.map((r) => `<tr>${r.map((c, i) => `<td class="${numClass(headers[i])} ${i === 0 ? 'muted-cell' : ''}">${h(c)}</td>`).join('')}</tr>`).join('')}
+        ${rows.map((r) => `<tr>${r.map((c, i) => `<td class="${numClass(headers[i])} ${i === 0 ? 'muted-cell' : ''}">${esc(c)}</td>`).join('')}</tr>`).join('')}
       </tbody>
     </table></div>
   `;
