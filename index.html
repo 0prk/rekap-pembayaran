@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rekap Pembayaran — Rekap Honor &amp; Pajak tanpa Pivot Manual</title>
+<meta name="description" content="Unggah Excel/CSV permohonan pemindahbukuan, langsung dapat rekap per penerima, per jenis pajak, dan cek konsistensi bruto-pajak-netto. 100% diproses di browser, data tidak pernah diupload." />
+<meta name="theme-color" content="#09090b" />
+<meta property="og:title" content="Rekap Pembayaran" />
+<meta property="og:description" content="Rekapitulasi honor & pajak dari Excel. Diproses 100% di browser." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2309090b'/><path d='M24 66V34h12v32zM44 66V24h12v42zM64 66V46h12v20z' fill='%238b5cf6'/></svg>" />
+<link rel="stylesheet" href="./assets/app.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">
+      <svg viewBox="0 0 100 100" width="26" height="26"><rect width="100" height="100" rx="22" fill="#111"/><path d="M24 66V34h12v32zM44 66V24h12v42zM64 66V46h12v20z" fill="#8b5cf6"/></svg>
+    </span>
+    <div>
+      <h1>Rekap Pembayaran</h1>
+      <p>Rekap honor &amp; pajak dari Excel — tanpa pivot manual</p>
+    </div>
+  </div>
+  <div class="badges">
+    <span class="badge ok" title="Tidak ada request ke server selain memuat halaman">🔒 Data tidak diupload</span>
+    <span class="badge">Tanpa internet setelah dimuat</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ STEP 1 ============ -->
+  <section class="card" id="step-upload">
+    <h2><span class="step-n">1</span> Muat data</h2>
+    <p class="hint">Format yang dikenali otomatis: <b>Permohonan Pemindahbukuan</b> (No · Keterangan · Bulan · Penerima · No. Rekening · Nominal Bruto · Potongan Pajak · Nominal Pajak · Nominal Netto), <b>Rincian Honor</b>, dan <b>Pembayaran Pajak</b>. File lain tetap bisa dibaca lewat pemetaan manual.</p>
+
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Pilih atau jatuhkan file">
+      <div class="dz-icon">📄</div>
+      <div class="dz-title">Jatuhkan file di sini</div>
+      <div class="dz-sub">atau klik untuk pilih — <b>.xlsx</b>, <b>.xls</b>, <b>.csv</b>, <b>.txt</b></div>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.txt" hidden />
+    </div>
+
+    <div class="row-actions">
+      <button class="btn ghost" id="btn-sample" type="button">Muat contoh data</button>
+      <button class="btn ghost" id="btn-paste-toggle" type="button">Tempel dari Excel</button>
+    </div>
+
+    <div class="paste-wrap hidden" id="paste-wrap">
+      <label class="field-label" for="paste-area">Tempel range dari Excel (Ctrl+C dari Excel, lalu paste di sini)</label>
+      <textarea id="paste-area" rows="6" spellcheck="false" placeholder="No&#9;Keterangan&#9;Bulan&#9;Penerima&#9;No. Rekening&#9;Nominal Bruto&#10;1&#9;Honor penjaga sekolah&#9;JULI - AGUSTUS&#9;SUPRIYONO&#9;0096920997&#9;2350000"></textarea>
+      <div class="row-actions">
+        <button class="btn primary" id="btn-paste" type="button">Proses tempelan</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STEP 2 ============ -->
+  <section class="card hidden" id="step-map">
+    <h2><span class="step-n">2</span> Cek pemetaan kolom</h2>
+    <p class="hint">Deteksi otomatis sudah mengisi sebagian besar kolom. Pastikan kolom yang dipakai benar, lalu tekan <b>Proses rekap</b>.</p>
+
+    <div id="sheet-tabs" class="sheet-tabs hidden"></div>
+
+    <div class="map-grid" id="map-grid"></div>
+
+    <details class="preview-box">
+      <summary>Pratinjau 5 baris pertama</summary>
+      <div class="table-wrap"><table id="preview-table" class="tbl preview"></table></div>
+    </details>
+
+    <div class="row-actions">
+      <button class="btn primary" id="btn-proses" type="button">Proses rekap</button>
+      <button class="btn ghost" id="btn-reset" type="button">Ganti file</button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 3 ============ -->
+  <section class="card hidden" id="step-report">
+    <h2><span class="step-n">3</span> Hasil rekap</h2>
+
+    <div class="stat-row" id="summary"></div>
+
+    <div id="issues"></div>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="penerima" type="button">Per Penerima</button>
+      <button class="tab" data-tab="pajak" type="button">Per Pajak</button>
+      <button class="tab" data-tab="keterangan" type="button">Per Keterangan</button>
+      <button class="tab" data-tab="bulan" type="button">Per Bulan</button>
+      <button class="tab" data-tab="mentah" type="button">Data Mentah</button>
+    </nav>
+
+    <div id="tab-content"></div>
+
+    <div class="row-actions">
+      <button class="btn primary" id="btn-export" type="button">Export CSV (tab aktif)</button>
+      <button class="btn ghost" id="btn-export-all" type="button">Export semua tab</button>
+      <button class="btn ghost" id="btn-print" type="button">Cetak / Simpan PDF</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Rekap Pembayaran — alat bantu kerja, bukan pengganti sistem resmi. <span class="sep">·</span> Semua perhitungan berjalan di perangkat kamu; file tidak dikirim ke mana pun.</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="./vendor/xlsx.full.min.js"></script>
+<script type="module" src="./assets/app.js"></script>
+</body>
+</html>
